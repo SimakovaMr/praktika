@@ -1,0 +1,90 @@
+#include <iostream>
+#include <fstream>
+#include <cmath>
+
+using namespace std;
+
+int main() {
+    setlocale(LC_ALL, "Rus");
+    ifstream f("data.txt");
+    if (!f.is_open()) {
+        cout << "Файл не найден" << endl;
+        return 1;
+    }
+
+    const int n = 9;
+    double* S = new double[n];
+    double* V = new double[n];
+
+    for (int i = 0; i < n; i++) {
+        f >> S[i];
+    }
+
+    for (int i = 0; i < n; i++) {
+        f >> V[i];
+    }
+
+    f.close();
+
+    double* X = new double[n];
+    double* Y = new double[n];
+
+    for (int i = 0; i < n; i++) {
+        X[i] = log(S[i]);
+        Y[i] = log(V[i]);
+    }
+
+    double s = 0, v = 0, sv = 0, s2 = 0, x = 0, y = 0, yx = 0, x2 = 0;
+
+    for (int i = 0; i < n; i++) {
+        s += S[i];
+        v += V[i];
+        sv += S[i] * V[i];
+        s2 += S[i] * S[i];
+        x += X[i];
+        y += Y[i];
+        yx += X[i] * Y[i];
+        x2 += X[i] * X[i];
+    }
+
+    double A[2], B[2];
+
+    A[1] = (n * yx - y * x) / (n * x2 - x * x);
+    A[0] = exp((y - A[1] * x) / n);
+
+    B[1] = (n * sv - v * s) / (n * s2 - s * s);
+    B[0] = (v - B[1] * s) / n;
+
+    double Mx = s / n;
+    double My = v / n;
+
+    double ch = 0, z_x = 0, z_y = 0, kor = 0;
+    double* g_r = new double[n];
+    double sum = 0;
+
+    for (int i = 0; i < n; i++) {
+        ch += (S[i] - Mx) * (V[i] - My);
+        z_x += (S[i] - Mx) * (S[i] - Mx);
+        z_y += (V[i] - My) * (V[i] - My);
+        g_r[i] = B[0] + B[1] * S[i];
+        sum += pow(V[i] - g_r[i], 2);
+    }
+
+    kor = ch / sqrt(z_x * z_y);
+    double mid = sum / n;
+
+    cout << "Коэффициенты функции: A = " << A[0] << ", B = " << A[1] << endl
+        << "Коэффициенты линии регрессии: a0 = " << B[0] << ", a1 = " << B[1] << endl
+        << "Коэффициент корреляции: " << kor << endl
+        << "Суммарная ошибка: " << sum << endl
+        << "Средняя ошибка: " << mid << endl;
+
+    delete[] S;
+    delete[] V;
+    delete[] X;
+    delete[] Y;
+    delete[] g_r;
+
+    system("pause");
+    return 0;
+}
